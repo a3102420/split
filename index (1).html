@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>旅遊分帳</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #f7f6f3;
+  --surface: #ffffff;
+  --border: #e8e6e0;
+  --border2: #f0ede8;
+  --text: #1a1917;
+  --text2: #6b6760;
+  --text3: #b0ada8;
+  --accent: #2d6a4f;
+  --accent-light: #d8f3dc;
+  --accent-text: #1b4332;
+  --danger: #c0392b;
+  --danger-light: #fdf0ef;
+  --warn: #e67e22;
+  --warn-light: #fef3e2;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans TC', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+
+/* 設定頁 */
+#setup-page {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 2rem 1.5rem;
+}
+.setup-icon { font-size: 3rem; display: block; margin-bottom: 1rem; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.setup-title { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; text-align: center; }
+.setup-sub { font-size: 14px; color: var(--text2); margin-top: 6px; text-align: center; margin-bottom: 2rem; }
+.setup-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.5rem; width: 100%; max-width: 420px; margin-bottom: 12px; }
+.setup-card h3 { font-size: 13px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+.setup-card p { font-size: 13px; color: var(--text2); margin-bottom: 12px; line-height: 1.6; }
+.config-field { margin-bottom: 10px; }
+.config-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
+.config-input { width: 100%; border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 9px 12px; font-size: 13px; font-family: monospace; background: var(--surface); color: var(--text); outline: none; }
+.config-input:focus { border-color: var(--accent); }
+.step-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--border2); align-items: flex-start; font-size: 13px; }
+.step-item:last-child { border-bottom: none; }
+.step-n { width: 20px; height: 20px; border-radius: 50%; background: var(--text); color: #fff; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.step-t { flex: 1; color: var(--text2); line-height: 1.6; }
+.step-t b { color: var(--text); }
+.pill { display: inline-block; background: var(--bg); border: 0.5px solid var(--border); border-radius: 4px; padding: 0px 6px; font-size: 11px; font-family: monospace; color: var(--text); }
+
+/* 首頁 */
+#home { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1.5rem; }
+.home-icon { font-size: 3rem; display: block; margin-bottom: 1rem; animation: float 3s ease-in-out infinite; }
+.home-title { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; text-align: center; }
+.home-sub { font-size: 14px; color: var(--text2); margin-top: 6px; text-align: center; }
+.home-badges { display: flex; gap: 6px; justify-content: center; margin: 14px 0 2.5rem; flex-wrap: wrap; }
+.badge { font-size: 11px; padding: 3px 10px; border-radius: 99px; background: var(--accent-light); color: var(--accent-text); border: 0.5px solid #b7e4c7; font-weight: 500; }
+.home-cards { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 10px; }
+.home-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+.home-card-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+.input-row { display: flex; gap: 8px; }
+
+/* 共用 */
+input[type=text], input[type=number], select, textarea {
+  flex: 1; border: 0.5px solid var(--border); border-radius: var(--radius-sm);
+  padding: 9px 12px; font-size: 14px; font-family: inherit;
+  background: var(--surface); color: var(--text); outline: none; transition: border-color 0.15s; width: 100%;
+}
+input:focus, select:focus { border-color: var(--accent); }
+.btn { padding: 9px 16px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 13px; font-family: inherit; cursor: pointer; white-space: nowrap; transition: all 0.12s; }
+.btn:hover { background: var(--bg); }
+.btn-primary { background: var(--text); color: #fff; border-color: var(--text); }
+.btn-primary:hover { background: #333; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-danger { color: var(--danger); border-color: #f5c6c2; font-size: 12px; padding: 5px 10px; }
+.btn-danger:hover { background: var(--danger-light); }
+.btn-success { background: #1D9E75; color: #fff; border-color: #1D9E75; }
+.btn-full { width: 100%; padding: 11px; text-align: center; }
+
+/* App */
+#app { display: none; max-width: 640px; margin: 0 auto; padding: 1rem 1rem 4rem; }
+.topbar { display: flex; align-items: center; gap: 10px; padding: 12px 0 16px; border-bottom: 0.5px solid var(--border); margin-bottom: 1.25rem; }
+.trip-info { flex: 1; min-width: 0; }
+.trip-name-el { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trip-meta { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.sync-pill { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 4px 10px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
+.sync-pill.ok { background: var(--accent-light); color: var(--accent-text); border: 0.5px solid #b7e4c7; }
+.sync-pill.warn { background: var(--warn-light); color: var(--warn); border: 0.5px solid #f5cba7; }
+.sync-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.sync-dot.ok { background: var(--accent); }
+.sync-dot.warn { background: var(--warn); animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.copy-btn { font-size: 12px; padding: 7px 14px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); cursor: pointer; color: var(--text2); white-space: nowrap; }
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* tabs */
+.tabs { display: flex; gap: 4px; margin-bottom: 1.25rem; background: var(--border2); padding: 3px; border-radius: var(--radius-sm); }
+.tab-btn { flex: 1; padding: 7px 4px; border: none; border-radius: 6px; background: transparent; font-size: 13px; font-family: inherit; color: var(--text2); cursor: pointer; transition: all 0.15s; }
+.tab-btn.active { background: var(--surface); color: var(--text); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+/* card */
+.card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; }
+.card-hdr { padding: 9px 1.1rem; background: var(--border2); border-bottom: 0.5px solid var(--border); font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
+.card-row { padding: 11px 1.1rem; border-bottom: 0.5px solid var(--border2); display: flex; align-items: center; gap: 8px; }
+.card-row:last-child { border-bottom: none; }
+.card-row input, .card-row select { border: none; background: transparent; padding: 0; width: auto; flex: 1; }
+.card-row input:focus, .card-row select:focus { outline: none; box-shadow: none; border: none; }
+
+/* avatar */
+.av { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.av0{background:#dbeafe;color:#1d4ed8} .av1{background:#dcfce7;color:#166534}
+.av2{background:#fce7f3;color:#9d174d} .av3{background:#fef3c7;color:#92400e}
+.av4{background:#ede9fe;color:#5b21b6} .av5{background:#ffedd5;color:#9a3412}
+.av6{background:#e0f2fe;color:#0369a1} .av7{background:#f0fdf4;color:#14532d}
+
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px 3px 5px; border-radius: 99px; border: 0.5px solid var(--border); background: var(--bg); font-size: 13px; }
+.chip-x { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 14px; line-height: 1; padding: 0 1px; }
+.chip-x:hover { color: var(--danger); }
+
+.exp-row { display: flex; align-items: flex-start; gap: 10px; padding: 13px 1.1rem; border-bottom: 0.5px solid var(--border2); }
+.exp-row:last-child { border-bottom: none; }
+.exp-body { flex: 1; min-width: 0; }
+.exp-name-el { font-size: 14px; font-weight: 500; }
+.exp-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.exp-amt { text-align: right; flex-shrink: 0; }
+.exp-amt-main { font-size: 15px; font-weight: 600; }
+.exp-amt-sub { font-size: 11px; color: var(--text3); }
+
+.settle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 1.1rem; border-bottom: 0.5px solid var(--border2); font-size: 14px; }
+.settle-row:last-child { border-bottom: none; }
+.txn-row { display: flex; align-items: center; gap: 8px; padding: 11px 1.1rem; border-bottom: 0.5px solid var(--border2); font-size: 14px; }
+.txn-row:last-child { border-bottom: none; }
+.txn-amt { margin-left: auto; font-weight: 600; font-size: 15px; }
+.pos { color: var(--accent); font-weight: 600; }
+.neg { color: var(--danger); font-weight: 600; }
+
+.split-item { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 0.5px solid var(--border2); }
+.split-item:last-child { border-bottom: none; }
+.tag-btn { padding: 5px 14px; border-radius: 99px; border: 0.5px solid var(--border); background: var(--bg); color: var(--text2); font-size: 13px; font-family: inherit; cursor: pointer; transition: all 0.12s; }
+.tag-btn.on { background: var(--text); color: #fff; border-color: var(--text); }
+
+.section { margin-bottom: 1.25rem; }
+.sec-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 7px; }
+.rate-bar { font-size: 11px; color: var(--text3); padding: 8px 1.1rem; line-height: 1.9; }
+.rate-badge { font-size: 11px; padding: 3px 9px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
+.rb-ok { background: var(--accent-light); color: var(--accent-text); border: 0.5px solid #b7e4c7; }
+.rb-warn { background: var(--warn-light); color: var(--warn); border: 0.5px solid #f5cba7; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.empty { padding: 2.5rem 1rem; text-align: center; color: var(--text3); font-size: 14px; }
+.helper { font-size: 11px; color: var(--text3); margin-top: 5px; }
+
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; backdrop-filter: blur(2px); }
+.modal { background: var(--surface); border-radius: var(--radius); padding: 1.5rem; width: 100%; max-width: 360px; }
+.modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.modal p { font-size: 13px; color: var(--text2); margin-bottom: 12px; }
+textarea { width: 100%; resize: none; border-radius: var(--radius-sm); font-size: 12px; font-family: monospace; background: var(--bg); padding: 10px; border: 0.5px solid var(--border); color: var(--text); }
+.toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: var(--text); color: #fff; padding: 10px 22px; border-radius: 99px; font-size: 13px; z-index: 999; pointer-events: none; white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.18); }
+.loader { position: fixed; inset: 0; background: rgba(247,246,243,0.92); display: flex; align-items: center; justify-content: center; z-index: 200; flex-direction: column; gap: 12px; }
+.loader-spin { width: 30px; height: 30px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text { font-size: 13px; color: var(--text2); }
+</style>
+</head>
+<body>
+
+<!-- Firebase 設定頁 -->
+<div id="setup-page">
+  <span class="setup-icon">🔧</span>
+  <div class="setup-title">設定 Firebase</div>
+  <div class="setup-sub">只需要做一次，設定完就能永久使用</div>
+
+  <div class="setup-card">
+    <h3>步驟說明</h3>
+    <div class="step-item">
+      <div class="step-n">1</div>
+      <div class="step-t">前往 <b>console.firebase.google.com</b>，用 Google 帳號登入</div>
+    </div>
+    <div class="step-item">
+      <div class="step-n">2</div>
+      <div class="step-t">點「新增專案」→ 輸入名稱（例如 <b>travel-split</b>）→ 關閉 Google Analytics → 建立</div>
+    </div>
+    <div class="step-item">
+      <div class="step-n">3</div>
+      <div class="step-t">左側選單點「建構」→「<b>Realtime Database</b>」→「建立資料庫」→ 選亞洲地區 → 以<b>測試模式</b>啟動</div>
+    </div>
+    <div class="step-item">
+      <div class="step-n">4</div>
+      <div class="step-t">左上角齒輪「專案設定」→「一般」→ 往下找「您的應用程式」→ 點 <b>&lt;/&gt;</b> 網頁圖示 → 註冊應用程式 → 複製 <span class="pill">firebaseConfig</span> 裡的值填入下方</div>
+    </div>
+  </div>
+
+  <div class="setup-card">
+    <h3>貼上你的 Firebase 設定</h3>
+    <div class="config-field">
+      <div class="config-label">API Key</div>
+      <input class="config-input" id="cfg-apiKey" placeholder="AIzaSy...">
+    </div>
+    <div class="config-field">
+      <div class="config-label">Database URL</div>
+      <input class="config-input" id="cfg-dbUrl" placeholder="https://your-project-default-rtdb.asia-southeast1.firebasedatabase.app">
+    </div>
+    <div class="config-field">
+      <div class="config-label">Project ID</div>
+      <input class="config-input" id="cfg-projectId" placeholder="your-project-id">
+    </div>
+    <div class="config-field">
+      <div class="config-label">App ID</div>
+      <input class="config-input" id="cfg-appId" placeholder="1:123456789:web:abc...">
+    </div>
+    <button class="btn btn-primary btn-full" style="margin-top:12px;" onclick="saveConfig()">儲存設定並開始使用</button>
+  </div>
+</div>
+
+<!-- 首頁 -->
+<div id="home" style="display:none;">
+  <span class="home-icon">✈️</span>
+  <div class="home-title">旅遊分帳</div>
+  <div class="home-sub">固定連結，朋友即時更新</div>
+  <div class="home-badges">
+    <span class="badge">固定網址</span>
+    <span class="badge">即時同步</span>
+    <span class="badge">台銀匯率</span>
+  </div>
+  <div class="home-cards">
+    <div class="home-card">
+      <div class="home-card-label">建立新行程</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input type="text" id="new-name" placeholder="行程名稱（例如：日本之旅）" onkeydown="if(event.key==='Enter')createTrip()">
+        <select id="new-cur">
+          <option value="TWD">基準貨幣：TWD 新台幣</option>
+          <option value="JPY">基準貨幣：JPY 日圓</option>
+          <option value="USD">基準貨幣：USD 美金</option>
+          <option value="EUR">基準貨幣：EUR 歐元</option>
+          <option value="KRW">基準貨幣：KRW 韓圜</option>
+          <option value="HKD">基準貨幣：HKD 港幣</option>
+        </select>
+        <button class="btn btn-primary btn-full" onclick="createTrip()">建立行程 →</button>
+      </div>
+    </div>
+    <div class="home-card">
+      <div class="home-card-label">加入行程</div>
+      <div class="input-row">
+        <input type="text" id="join-code" placeholder="貼上行程連結或代碼" onkeydown="if(event.key==='Enter')joinTrip()">
+        <button class="btn btn-primary" onclick="joinTrip()">加入</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <div class="topbar">
+    <div class="trip-info">
+      <div class="trip-name-el" id="hdr-name"></div>
+      <div class="trip-meta" id="hdr-meta"></div>
+    </div>
+    <div class="sync-pill ok" id="sync-pill">
+      <div class="sync-dot ok" id="sync-dot"></div>
+      <span id="sync-label">即時同步</span>
+    </div>
+    <button class="copy-btn" onclick="copyLink()">複製連結</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('members')">成員</button>
+    <button class="tab-btn" onclick="switchTab('add')">新增費用</button>
+    <button class="tab-btn" onclick="switchTab('expenses')">費用清單</button>
+    <button class="tab-btn" onclick="switchTab('settle')">結帳</button>
+  </div>
+
+  <!-- 成員 -->
+  <div id="tab-members">
+    <div class="section">
+      <div class="sec-label">成員</div>
+      <div class="card">
+        <div class="card-row">
+          <input type="text" id="inp-member" placeholder="輸入名字" onkeydown="if(event.key==='Enter')addMember()">
+          <button class="btn btn-primary btn-sm" onclick="addMember()">新增</button>
+        </div>
+        <div id="members-wrap" style="padding:10px 1.1rem;display:flex;flex-wrap:wrap;gap:6px;min-height:46px;border-top:0.5px solid var(--border2);"></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="sec-label">基準貨幣</div>
+      <div class="card">
+        <div class="card-row">
+          <select id="base-cur" onchange="changeBaseCur()">
+            <option>TWD</option><option>JPY</option><option>USD</option><option>EUR</option>
+            <option>KRW</option><option>HKD</option><option>SGD</option><option>CNY</option><option>AUD</option><option>GBP</option>
+          </select>
+          <span class="rate-badge rb-warn" id="rate-badge">載入中</span>
+        </div>
+        <div id="rate-bar" class="rate-bar">—</div>
+      </div>
+      <div class="helper">匯率來源：台灣銀行即期匯率（買入＋賣出中間價）</div>
+    </div>
+  </div>
+
+  <!-- 新增費用 -->
+  <div id="tab-add" style="display:none;">
+    <div class="card">
+      <div class="card-hdr">費用資訊</div>
+      <div class="card-row">
+        <input type="text" id="exp-name" placeholder="費用名稱（例如：晚餐）" style="font-size:15px;">
+      </div>
+      <div class="card-row">
+        <input type="number" id="exp-amt" placeholder="金額" min="0" step="any" style="font-size:22px;font-weight:600;" oninput="updateHint()">
+        <select id="exp-cur" style="width:82px;flex:none;" onchange="updateHint();renderSplitMembers()">
+          <option>TWD</option><option>JPY</option><option>USD</option><option>EUR</option>
+          <option>KRW</option><option>HKD</option><option>SGD</option><option>CNY</option><option>AUD</option><option>GBP</option>
+        </select>
+      </div>
+      <div id="hint-row" class="card-row" style="display:none;padding-top:7px;padding-bottom:7px;">
+        <span style="font-size:12px;color:var(--text2);font-style:italic;" id="conv-hint"></span>
+      </div>
+      <div class="card-row">
+        <span style="font-size:13px;color:var(--text2);flex:none;">誰付錢</span>
+        <select id="exp-payer"></select>
+      </div>
+      <div class="card-hdr">分攤方式</div>
+      <div class="card-row" style="gap:6px;">
+        <button class="tag-btn on" id="mode-equal" onclick="setMode('equal')">平均分攤</button>
+        <button class="tag-btn" id="mode-custom" onclick="setMode('custom')">自訂金額</button>
+      </div>
+      <div class="card-hdr">分攤對象</div>
+      <div id="split-wrap" style="padding:4px 1.1rem 8px;"></div>
+      <div class="card-row" style="border-top:0.5px solid var(--border);">
+        <button class="btn btn-primary btn-full" onclick="addExpense()">新增費用</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 費用清單 -->
+  <div id="tab-expenses" style="display:none;">
+    <div class="card" id="expenses-list"></div>
+  </div>
+
+  <!-- 結帳 -->
+  <div id="tab-settle" style="display:none;">
+    <div class="section">
+      <div class="card">
+        <div class="card-hdr">各人餘額（<span id="settle-cur">TWD</span>）</div>
+        <div id="balances"></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="card">
+        <div class="card-hdr">建議轉帳</div>
+        <div id="txns"></div>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:4px;">
+      <button class="btn btn-primary" onclick="exportText()">匯出帳單</button>
+      <button class="btn btn-success" onclick="exportCSV()">下載 CSV</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-root"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, set, push, remove, onValue, update } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+// ── Firebase 設定 ─────────────────────────────────────
+let db = null;
+let tripId = null;
+let unsubscribe = null;
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDVYr2-oDrFyKlR3Sr2QxKteaKQrlKOsJA",
+  authDomain: "travel-d5a9f.firebaseapp.com",
+  databaseURL: "https://travel-d5a9f-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "travel-d5a9f",
+  storageBucket: "travel-d5a9f.firebasestorage.app",
+  messagingSenderId: "443718907418",
+  appId: "1:443718907418:web:f6fbe645a668e3b3e303a3"
+};
+
+// 直接初始化，跳過設定頁
+const app = initializeApp(FIREBASE_CONFIG);
+db = getDatabase(app);
+document.getElementById('setup-page').style.display = 'none';
+document.getElementById('home').style.display = 'flex';
+const _hash = location.hash.slice(1);
+if (_hash && _hash.length > 4) openTrip(_hash); 
+
+// ── 狀態 ──────────────────────────────────────────────
+let state = { name:'', baseCurrency:'TWD', members:{}, expenses:{} };
+let rates = {};
+let splitMode = 'equal';
+let selMembers = [];
+
+// ── 頭像 ─────────────────────────────────────────────
+function avClass(name) { return 'av' + ([...name].reduce((a,c)=>a+c.charCodeAt(0),0) % 8); }
+
+// ── 台灣銀行匯率 ──────────────────────────────────────
+async function loadRates() {
+  const badge = document.getElementById('rate-badge');
+  try {
+    const res = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://rate.bot.com.tw/xrt/flcsv/0/day'));
+    const text = await res.text();
+    const parsed = parseTaiwanBankCSV(text);
+    if (Object.keys(parsed).length > 3) {
+      rates = parsed;
+      badge.textContent = '台銀即時';
+      badge.className = 'rate-badge rb-ok';
+      renderRateBar(); return;
+    }
+  } catch(e) {}
+  rates = { TWD:1, USD:31.485, JPY:0.1978, EUR:36.985, HKD:4.022, SGD:24.74, CNY:4.616, KRW:0.02157, AUD:22.578, GBP:42.58 };
+  badge.textContent = '備用匯率';
+  badge.className = 'rate-badge rb-warn';
+  renderRateBar();
+}
+
+function parseTaiwanBankCSV(text) {
+  const r = { TWD: 1 };
+  for (const line of text.split('\n')) {
+    const cols = line.split(',');
+    if (cols.length < 5) continue;
+    const m = cols[0].match(/\(([A-Z]{3})\)/);
+    if (!m) continue;
+    const sb = parseFloat(cols[3]), ss = parseFloat(cols[4]);
+    const cb = parseFloat(cols[1]), cs = parseFloat(cols[2]);
+    let mid = null;
+    if (!isNaN(sb) && !isNaN(ss) && sb > 0 && ss > 0) mid = (sb + ss) / 2;
+    else if (!isNaN(cb) && !isNaN(cs) && cb > 0 && cs > 0) mid = (cb + cs) / 2;
+    if (mid) r[m[1]] = mid;
+  }
+  return r;
+}
+
+function renderRateBar() {
+  const base = state.baseCurrency || 'TWD';
+  const pairs = Object.entries(rates).filter(([c]) => c !== base).map(([c, twdMid]) => {
+    if (base === 'TWD') return `1 ${c} = ${twdMid.toFixed(4)} TWD`;
+    const baseTWD = rates[base] || 1;
+    if (c === 'TWD') return `1 ${base} = ${baseTWD.toFixed(4)} TWD`;
+    return `1 ${base} = ${(baseTWD / twdMid).toFixed(4)} ${c}`;
+  }).slice(0, 8);
+  document.getElementById('rate-bar').textContent = pairs.join('　') || '—';
+}
+
+function toBase(amount, currency) {
+  const base = state.baseCurrency || 'TWD';
+  if (currency === base) return amount;
+  const fromTWD = rates[currency] || 1;
+  if (base === 'TWD') return amount * fromTWD;
+  return (amount * fromTWD) / (rates[base] || 1);
+}
+
+function fmtBase(n) { return Math.round(n).toLocaleString() + ' ' + (state.baseCurrency || 'TWD'); }
+
+// ── 首頁 ──────────────────────────────────────────────
+async function createTrip() {
+  const name = document.getElementById('new-name').value.trim();
+  const baseCurrency = document.getElementById('new-cur').value;
+  if (!name) { showToast('請輸入行程名稱'); return; }
+  showLoader(true);
+  const newRef = push(ref(db, 'trips'));
+  const id = newRef.key;
+  await set(newRef, { name, baseCurrency, members: {}, expenses: {} });
+  showLoader(false);
+  openTrip(id);
+}
+window.createTrip = createTrip;
+
+function joinTrip() {
+  let val = document.getElementById('join-code').value.trim();
+  const m = val.match(/#(.+)$/);
+  const id = m ? m[1] : val;
+  if (!id) { showToast('請輸入行程代碼'); return; }
+  openTrip(id);
+}
+window.joinTrip = joinTrip;
+
+function openTrip(id) {
+  tripId = id;
+  history.replaceState(null, '', '/#' + id);
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('hdr-meta').textContent = '代碼：' + id;
+  loadRates();
+  listenTrip(id);
+}
+
+// ── Firebase 即時監聽 ─────────────────────────────────
+function listenTrip(id) {
+  if (unsubscribe) unsubscribe();
+  setSyncWarn();
+  const tripRef = ref(db, 'trips/' + id);
+  unsubscribe = onValue(tripRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) { showToast('找不到行程'); return; }
+    state = {
+      name: data.name || '',
+      baseCurrency: data.baseCurrency || 'TWD',
+      members: data.members || {},
+      expenses: data.expenses || {}
+    };
+    document.getElementById('hdr-name').textContent = state.name;
+    document.getElementById('base-cur').value = state.baseCurrency;
+    document.getElementById('settle-cur').textContent = state.baseCurrency;
+    renderMembers();
+    renderExpenses();
+    renderRateBar();
+    setSyncOk();
+  }, (error) => {
+    setSyncWarn();
+    showToast('連線中斷，嘗試重新連線...');
+  });
+}
+
+function setSyncOk() {
+  document.getElementById('sync-dot').className = 'sync-dot ok';
+  document.getElementById('sync-pill').className = 'sync-pill ok';
+  document.getElementById('sync-label').textContent = '即時同步';
+}
+function setSyncWarn() {
+  document.getElementById('sync-dot').className = 'sync-dot warn';
+  document.getElementById('sync-pill').className = 'sync-pill warn';
+  document.getElementById('sync-label').textContent = '連線中...';
+}
+
+// ── 成員 ──────────────────────────────────────────────
+async function addMember() {
+  const inp = document.getElementById('inp-member');
+  const name = inp.value.trim();
+  if (!name) return;
+  if (Object.values(state.members).includes(name)) { showToast('成員已存在'); return; }
+  const key = 'm' + Date.now();
+  await set(ref(db, `trips/${tripId}/members/${key}`), name);
+  inp.value = '';
+}
+window.addMember = addMember;
+
+async function removeMember(key) {
+  await remove(ref(db, `trips/${tripId}/members/${key}`));
+}
+window.removeMember = removeMember;
+
+function getMemberList() {
+  return Object.entries(state.members).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>({key:k,name:v}));
+}
+
+function renderMembers() {
+  const members = getMemberList();
+  const el = document.getElementById('members-wrap');
+  el.innerHTML = members.length
+    ? members.map(m => `<div class="chip"><div class="av ${avClass(m.name)}" style="width:22px;height:22px;font-size:10px;">${m.name[0]}</div><span>${m.name}</span><button class="chip-x" onclick="removeMember('${m.key}')">×</button></div>`).join('')
+    : '<span style="font-size:13px;color:var(--text3);">尚未新增成員</span>';
+  const names = members.map(m => m.name);
+  document.getElementById('exp-payer').innerHTML = names.map(n => `<option>${n}</option>`).join('');
+  selMembers = [...names];
+  renderSplitMembers();
+}
+
+async function changeBaseCur() {
+  const cur = document.getElementById('base-cur').value;
+  await update(ref(db, `trips/${tripId}`), { baseCurrency: cur });
+}
+window.changeBaseCur = changeBaseCur;
+
+// ── 新增費用 ──────────────────────────────────────────
+function setMode(m) {
+  splitMode = m;
+  document.getElementById('mode-equal').className = 'tag-btn' + (m==='equal'?' on':'');
+  document.getElementById('mode-custom').className = 'tag-btn' + (m==='custom'?' on':'');
+  renderSplitMembers();
+}
+window.setMode = setMode;
+
+function renderSplitMembers() {
+  const el = document.getElementById('split-wrap');
+  const members = getMemberList();
+  if (!members.length) { el.innerHTML='<div style="padding:8px 0;font-size:13px;color:var(--text3);">請先新增成員</div>'; return; }
+  const cur = document.getElementById('exp-cur')?.value || 'TWD';
+  if (splitMode === 'equal') {
+    el.innerHTML = members.map((m,i) =>
+      `<div class="split-item" style="${i===members.length-1?'border:none':''}">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;">
+          <input type="checkbox" ${selMembers.includes(m.name)?'checked':''} onchange="toggleSel('${m.name}',this.checked)" style="width:15px;height:15px;flex:none;accent-color:var(--accent);">
+          <div class="av ${avClass(m.name)}">${m.name[0]}</div>
+          <span style="font-size:14px;">${m.name}</span>
+        </label>
+      </div>`).join('');
+  } else {
+    el.innerHTML = members.map((m,i) =>
+      `<div class="split-item" style="${i===members.length-1?'border:none':''}">
+        <div class="av ${avClass(m.name)}">${m.name[0]}</div>
+        <span style="font-size:14px;width:72px;flex:none;">${m.name}</span>
+        <input type="number" data-custom="${m.name}" placeholder="0" min="0" step="any" style="text-align:right;flex:1;border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px;background:var(--surface);">
+        <span style="font-size:12px;color:var(--text3);flex:none;">${cur}</span>
+      </div>`).join('');
+  }
+}
+window.renderSplitMembers = renderSplitMembers;
+
+function toggleSel(name, checked) {
+  if (checked) { if (!selMembers.includes(name)) selMembers.push(name); }
+  else { selMembers = selMembers.filter(m=>m!==name); }
+}
+window.toggleSel = toggleSel;
+
+function updateHint() {
+  const amt = parseFloat(document.getElementById('exp-amt').value);
+  const cur = document.getElementById('exp-cur').value;
+  const base = state.baseCurrency || 'TWD';
+  const row = document.getElementById('hint-row');
+  const hint = document.getElementById('conv-hint');
+  if (!isNaN(amt) && amt > 0 && cur !== base) {
+    hint.textContent = `≈ ${fmtBase(toBase(amt, cur))}`;
+    row.style.display = '';
+  } else { row.style.display = 'none'; }
+}
+window.updateHint = updateHint;
+
+async function addExpense() {
+  const name = document.getElementById('exp-name').value.trim();
+  const amount = parseFloat(document.getElementById('exp-amt').value);
+  const currency = document.getElementById('exp-cur').value;
+  const payer = document.getElementById('exp-payer').value;
+  if (!name || isNaN(amount) || amount <= 0 || !payer) { showToast('請填寫費用名稱和金額'); return; }
+  const amountBase = toBase(amount, currency);
+  let splits = {};
+  const memberNames = getMemberList().map(m => m.name);
+  if (splitMode === 'equal') {
+    const chosen = selMembers.length > 0 ? selMembers : memberNames;
+    if (!chosen.length) { showToast('請選擇分攤對象'); return; }
+    const each = amountBase / chosen.length;
+    chosen.forEach(m => splits[m] = parseFloat(each.toFixed(4)));
+  } else {
+    let total = 0;
+    memberNames.forEach(m => {
+      const inp = document.querySelector(`[data-custom="${m}"]`);
+      const val = inp ? parseFloat(inp.value)||0 : 0;
+      splits[m] = toBase(val, currency);
+      total += val;
+    });
+    if (Math.abs(total - amount) > 0.5) { showToast(`金額不符：填入 ${total.toFixed(2)}，應為 ${amount.toFixed(2)}`); return; }
+  }
+  const key = 'e' + Date.now();
+  await set(ref(db, `trips/${tripId}/expenses/${key}`), { id:key, name, amount, currency, amountBase, payer, splits, mode:splitMode });
+  document.getElementById('exp-name').value = '';
+  document.getElementById('exp-amt').value = '';
+  document.getElementById('hint-row').style.display = 'none';
+  showToast('已新增：' + name);
+}
+window.addExpense = addExpense;
+
+async function removeExpense(key) {
+  await remove(ref(db, `trips/${tripId}/expenses/${key}`));
+}
+window.removeExpense = removeExpense;
+
+function renderExpenses() {
+  const el = document.getElementById('expenses-list');
+  const base = state.baseCurrency || 'TWD';
+  const list = Object.entries(state.expenses).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>({key:k,...v}));
+  if (!list.length) { el.innerHTML='<div class="empty">尚無費用記錄</div>'; return; }
+  el.innerHTML = list.map(e => {
+    const who = Object.entries(e.splits||{}).filter(([,v])=>v>0).map(([m])=>m).join('、');
+    return `<div class="exp-row">
+      <div class="av ${avClass(e.payer)}" style="margin-top:1px;">${e.payer[0]}</div>
+      <div class="exp-body">
+        <div class="exp-name-el">${e.name}</div>
+        <div class="exp-meta">${e.payer} 付 · ${e.mode==='equal'?'平均':'自訂'} · ${who}</div>
+      </div>
+      <div class="exp-amt">
+        <div class="exp-amt-main">${e.currency} ${Number(e.amount).toLocaleString()}</div>
+        ${e.currency!==base?`<div class="exp-amt-sub">≈ ${fmtBase(e.amountBase||e.amount)}</div>`:''}
+      </div>
+      <button class="btn btn-danger" onclick="removeExpense('${e.key}')">刪除</button>
+    </div>`;
+  }).join('');
+}
+
+// ── 結帳 ──────────────────────────────────────────────
+function calcBalances() {
+  const b = {};
+  getMemberList().forEach(m => b[m.name] = 0);
+  Object.values(state.expenses).forEach(e => {
+    if (b[e.payer] !== undefined) b[e.payer] += parseFloat(e.amountBase||e.amount);
+    Object.entries(e.splits||{}).forEach(([m,a]) => { if (b[m] !== undefined) b[m] -= parseFloat(a); });
+  });
+  return b;
+}
+
+function calcTxns(bal) {
+  const pos=[], neg=[];
+  Object.entries(bal).forEach(([m,b]) => { if(b>0.01) pos.push({m,b}); else if(b<-0.01) neg.push({m,b:-b}); });
+  const txns=[], p=pos.map(x=>({...x})), n=neg.map(x=>({...x}));
+  let i=0, j=0;
+  while(i<p.length&&j<n.length) {
+    const amt=Math.min(p[i].b,n[j].b);
+    txns.push({from:n[j].m,to:p[i].m,amt});
+    p[i].b-=amt; n[j].b-=amt;
+    if(p[i].b<0.01)i++; if(n[j].b<0.01)j++;
+  }
+  return txns;
+}
+
+function renderSettle() {
+  const base = state.baseCurrency||'TWD';
+  document.getElementById('settle-cur').textContent = base;
+  const bal = calcBalances();
+  const bEl = document.getElementById('balances');
+  if (!getMemberList().length) { bEl.innerHTML='<div class="empty">請先新增成員</div>'; return; }
+  bEl.innerHTML = Object.entries(bal).map(([m,b]) =>
+    `<div class="settle-row">
+      <div style="display:flex;align-items:center;gap:8px;"><div class="av ${avClass(m)}">${m[0]}</div><span>${m}</span></div>
+      <span class="${b>=0?'pos':'neg'}">${b>=0?'+':''}${Math.round(b).toLocaleString()} ${base}</span>
+    </div>`).join('');
+  const txns = calcTxns(bal);
+  document.getElementById('txns').innerHTML = !txns.length
+    ? '<div class="empty">✓ 已結清，無需轉帳</div>'
+    : txns.map(t =>
+      `<div class="txn-row">
+        <div class="av ${avClass(t.from)}">${t.from[0]}</div><span>${t.from}</span>
+        <span style="color:var(--text3);font-size:12px;">→</span>
+        <div class="av ${avClass(t.to)}">${t.to[0]}</div><span>${t.to}</span>
+        <span class="txn-amt">${Math.round(t.amt).toLocaleString()} ${base}</span>
+      </div>`).join('');
+}
+window.renderSettle = renderSettle;
+
+function exportText() {
+  const base=state.baseCurrency||'TWD', bal=calcBalances(), txns=calcTxns(bal);
+  let txt=`=== ${state.name} ===\n\n【費用清單】\n`;
+  Object.values(state.expenses).forEach(e=>{ txt+=`• ${e.name}：${e.currency} ${Number(e.amount).toLocaleString()}${e.currency!==base?' (≈'+fmtBase(e.amountBase||e.amount)+')':''} — ${e.payer} 付\n`; });
+  txt+=`\n【各人餘額（${base}）】\n`;
+  Object.entries(bal).forEach(([m,b])=>{ txt+=`• ${m}：${b>=0?'+':''}${Math.round(b).toLocaleString()} ${base}\n`; });
+  txt+=`\n【建議轉帳】\n`;
+  txns.length ? txns.forEach(t=>{ txt+=`• ${t.from} → ${t.to}：${Math.round(t.amt).toLocaleString()} ${base}\n`; }) : (txt+='已結清\n');
+  document.getElementById('modal-root').innerHTML =
+    `<div class="modal-bg" onclick="if(event.target===this)this.remove()"><div class="modal"><h3>帳單內容</h3><p>可複製傳給朋友</p><textarea rows="14" readonly>${txt}</textarea><div class="grid2" style="margin-top:10px;"><button class="btn" onclick="navigator.clipboard.writeText(document.querySelector('.modal textarea').value).then(()=>showToast('已複製！'))">複製</button><button class="btn btn-primary" onclick="document.querySelector('.modal-bg').remove()">關閉</button></div></div></div>`;
+}
+window.exportText = exportText;
+
+function exportCSV() {
+  const base=state.baseCurrency||'TWD';
+  let csv=`費用名稱,金額,貨幣,換算${base},付款人,分攤方式\n`;
+  Object.values(state.expenses).forEach(e=>{ csv+=`"${e.name}",${e.amount},"${e.currency}",${Math.round(e.amountBase||e.amount)},"${e.payer}","${e.mode==='equal'?'平均':'自訂'}"\n`; });
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv'})); a.download=`${state.name}.csv`; a.click();
+  showToast('CSV 已下載！');
+}
+window.exportCSV = exportCSV;
+
+// ── Tab ───────────────────────────────────────────────
+function switchTab(t) {
+  ['members','add','expenses','settle'].forEach(id => {
+    document.getElementById('tab-'+id).style.display = id===t?'':'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach((el,i) => {
+    el.classList.toggle('active', ['members','add','expenses','settle'][i]===t);
+  });
+  if(t==='settle') renderSettle();
+  if(t==='add') { selMembers=[...getMemberList().map(m=>m.name)]; renderSplitMembers(); }
+}
+window.switchTab = switchTab;
+
+function copyLink() {
+  const url = 'https://a3102420.github.io/split/#' + tripId;
+  navigator.clipboard.writeText(url).then(() => showToast('連結已複製！傳給朋友即可加入'));
+}
+window.copyLink = copyLink;
+
+function showToast(msg) {
+  const old=document.querySelector('.toast'); if(old) old.remove();
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.transition='opacity 0.3s'; t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 2800);
+}
+window.showToast = showToast;
+
+function showLoader(v) {
+  const old=document.querySelector('.loader'); if(old) old.remove();
+  if(v) { const d=document.createElement('div'); d.className='loader'; d.innerHTML='<div class="loader-spin"></div><div class="loader-text">建立行程中...</div>'; document.body.appendChild(d); }
+}
+</script>
+</body>
+</html>
